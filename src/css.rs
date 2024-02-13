@@ -68,6 +68,12 @@ impl SimpleSelector {
         match self {
             // *
             SimpleSelector::UniversalSelector => true,
+            SimpleSelector::TypeSelector { tag_name } => {
+                match &n.node_type {
+                    NodeType::Element(e) => e.tag_name.as_str() == tag_name,
+                    _ => false
+                }
+            }
             // not *
             _ => false
         }
