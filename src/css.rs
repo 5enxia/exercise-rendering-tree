@@ -84,12 +84,13 @@ impl SimpleSelector {
             } => {
                 match &n.node_type {
                     NodeType::Element(e) => {
-                        e.tag_name.as_str() == tag_name && match op {
+                        let is_mached_tag_name = e.tag_name.as_str() == tag_name;
+                        is_mached_tag_name && match op {
                             AttributeSelectorOp::Eq => e.attributes.get(attribute) == Some(value),
                             AttributeSelectorOp::Contain => e.attributes.get(attribute).map(|value| {
                                 value.split_ascii_whitespace().find(|v| v == value).is_some()
                             })
-                            .unwrap_or(false),
+                            .unwrap_or(false)
                         }
                     },
                     _ => false,
