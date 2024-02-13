@@ -64,7 +64,13 @@ pub enum SimpleSelector {
 
 impl SimpleSelector {
     pub fn matches(&self, n: &Box<Node>) -> bool {
-        todo!("you need to implement this")
+        // todo!("you need to implement this")
+        match self {
+            // *
+            SimpleSelector::UniversalSelector => true,
+            // not *
+            _ => false
+        }
     }
 }
 
