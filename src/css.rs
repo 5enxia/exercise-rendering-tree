@@ -68,12 +68,33 @@ impl SimpleSelector {
         match self {
             // *
             SimpleSelector::UniversalSelector => true,
+            // tag_name
             SimpleSelector::TypeSelector { tag_name } => {
                 match &n.node_type {
                     NodeType::Element(e) => e.tag_name.as_str() == tag_name,
                     _ => false
                 }
-            }
+            },
+            // attribute
+            SimpleSelector::AttributeSelector {
+                tag_name,
+                op,
+                attribute,
+                value
+            } => {
+                match &n.node_type {
+                    NodeType::Element(e) => {
+                        e.tag_name.as_str() == tag_name && match op {
+                            AttributeSelectorOp::Eq => e.attributes.get(attribute) == Some(value),
+                            AttributeSelectorOp::Contain => e.attributes.get(attribute).map(|value| {
+                                value.split_ascii_whitespace().find(|v| v == value).is_some()
+                            })
+                            .unwrap_or(false),
+                        }
+                    },
+                    _ => false,
+                }
+            },
             // else
             _ => false
         }
