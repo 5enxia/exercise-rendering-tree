@@ -74,7 +74,7 @@ impl SimpleSelector {
                     _ => false
                 }
             }
-            // not *
+            // else
             _ => false
         }
     }
