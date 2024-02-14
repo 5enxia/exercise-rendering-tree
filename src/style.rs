@@ -26,7 +26,29 @@ pub struct StyledNode<'a> {
 }
 
 pub fn to_styled_node<'a>(node: &'a Box<Node>, stylesheet: &Stylesheet) -> Option<StyledNode<'a>> {
-    todo!("you need to implement this")
+    // todo!("you need to implement this")
+    let mut properties: HashMap<String, CSSValue> = HashMap::new();
+
+    let matched_rules = stylesheet.rules.iter().filter(|rule| rule.matches(node));
+    for matched_rule in matched_rules {
+        for declaration in &matched_rule.declarations {
+            properties.insert(declaration.name.clone(), declaration.value.clone());
+        }
+    }
+
+    if properties.get("display") == Some(&CSSValue::Keyword("none".to_string())) {
+        return None;
+    }
+
+    let children = node.children.iter()
+        .filter_map(|child_node| to_styled_node(child_node, stylesheet))
+        .collect();
+
+    Some(StyledNode {
+        node_type: &node.node_type,
+        children,
+        properties,
+    })
 }
 
 impl<'a> StyledNode<'a> {
