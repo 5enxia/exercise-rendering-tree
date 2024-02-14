@@ -96,8 +96,12 @@ impl SimpleSelector {
                     _ => false,
                 }
             },
-            // else
-            _ => false
+            SimpleSelector::ClassSelector { class_name } => {
+                match &n.node_type {
+                    NodeType::Element(e) => e.attributes.get("class") == Some(class_name),
+                    _ => false
+                }
+            },
         }
     }
 }
