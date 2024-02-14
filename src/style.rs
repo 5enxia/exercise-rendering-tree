@@ -29,6 +29,7 @@ pub fn to_styled_node<'a>(node: &'a Box<Node>, stylesheet: &Stylesheet) -> Optio
     // todo!("you need to implement this")
     let mut properties: HashMap<String, CSSValue> = HashMap::new();
 
+    // filterling & cascading
     let matched_rules = stylesheet.rules.iter().filter(|rule| rule.matches(node));
     for matched_rule in matched_rules {
         for declaration in &matched_rule.declarations {
@@ -36,10 +37,13 @@ pub fn to_styled_node<'a>(node: &'a Box<Node>, stylesheet: &Stylesheet) -> Optio
         }
     }
 
+    // defaulting
+
     if properties.get("display") == Some(&CSSValue::Keyword("none".to_string())) {
         return None;
     }
 
+    // 子要素を再帰的に処理
     let children = node.children.iter()
         .filter_map(|child_node| to_styled_node(child_node, stylesheet))
         .collect();
