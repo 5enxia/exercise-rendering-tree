@@ -22,9 +22,27 @@ pub struct BoxProps<'a> {
 }
 
 pub fn to_layout_box<'a>(snode: StyledNode<'a>) -> LayoutBox<'a> {
+    // box typeを判定
+    let display_type = snode.display();
+    let box_type = match display_type {
+        Display::Block => {
+            BoxType::BlockBox(BoxProps {
+                node_type: snode.node_type,
+                properties: snode.properties
+            })
+        },
+        Display::Inline => {
+            BoxType::InlineBox(BoxProps {
+                node_type: snode.node_type,
+                properties: snode.properties
+            })
+        },
+        Display::None => unreachable!("Root node has no display type"),
+    };
+
     LayoutBox {
-        box_type: BoxType::AnonymousBox,
-        children: vec![]
+        box_type: box_type,
+        children: vec![],
     }
 }
 
