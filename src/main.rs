@@ -35,7 +35,11 @@ fn main() {
     let mut siv = cursive::default();
 
     let node = html::parse(HTML);
-    let stylesheet = css::parse(&format!("{}\n{}", DEFAULT_STYLESHEET, ""));
+    let stylesheet = css::parse(&format!(
+        "{}\n{}",
+        DEFAULT_STYLESHEET,
+        collect_tag_inners(&node, "style".into()).join("\n")
+    ));
 
     let container = to_styled_node(&node, &stylesheet)
         .and_then(|styled_node| Some(to_layout_box(styled_node)))
