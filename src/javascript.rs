@@ -1,3 +1,16 @@
+pub struct JavaScriptRuntime {
+}
+
+impl JavaScriptRuntime {
+    pub fn new() -> JavaScriptRuntime {
+        JavaScriptRuntime {}
+    }
+
+    pub fn execute(&mut self, _filename: &str, _source: &str) -> Result<String, String> {
+        Ok("".to_string())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
