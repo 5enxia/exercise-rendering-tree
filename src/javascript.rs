@@ -8,6 +8,8 @@ use v8;
 
 use crate::dom::Node;
 
+mod renderapi;
+
 pub struct JavaScriptRuntimeState {
     pub context: v8::Global<v8::Context>,
     // pub renderer_api: Rc<RendererAPI>,
