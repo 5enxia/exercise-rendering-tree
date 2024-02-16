@@ -3,7 +3,8 @@ use exercise_rendering_tree::{
     css,
     layout::to_layout_box,
     render::to_element_container,
-    style::to_styled_node
+    style::to_styled_node,
+    dom::{Node, NodeType}
 };
 
 const HTML: &str = r#"<body>
@@ -44,4 +45,20 @@ fn main() {
     }
 
     siv.run();
+}
+
+pub fn collect_tag_inners(node: &Box<Node>, tag_name: &str) -> Vec<String> {
+    if let NodeType::Element(ref el) = node.node_type {
+        if el.tag_name.as_str() == tag_name {
+            return vec![node.inner_text()];
+        }
+    }
+
+    node.children
+        .iter()
+        .map(|child| collect_tag_inners(child, tag_name))
+        .collect::<Vec<Vec<String>>>()
+        .into_iter()
+        .flatten()
+        .collect()
 }

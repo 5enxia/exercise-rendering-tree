@@ -7,6 +7,21 @@ pub struct Node {
     pub children: Vec<Box<Node>>,
 }
 
+impl Node {
+    pub fn inner_text(&self) -> String {
+        self.children
+            .iter()
+            .clone()
+            .into_iter()
+            .map(|node| match &node.node_type {
+                NodeType::Text(text) => text.data.clone(),
+                _ => node.inner_text(),
+            })
+            .collect::<Vec<String>>()
+            .join("")
+    }
+}
+
 #[derive(Debug, PartialEq)]
 pub enum NodeType {
     Element(Element),
