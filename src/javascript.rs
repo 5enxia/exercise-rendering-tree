@@ -6,8 +6,12 @@ use std::{cell::RefCell, f32::consts::E, rc::Rc, sync::Once};
 // use rusty_v8 as v8;
 use v8;
 
+use crate::dom::Node;
+
 pub struct JavaScriptRuntimeState {
-    pub context: v8::Global<v8::Context>
+    pub context: v8::Global<v8::Context>,
+    // pub renderer_api: Rc<RendererAPI>,
+    // pub doccument_element: Rc<RefCell<Box<Node>>>,
 }
 
 #[derive(Debug)]
