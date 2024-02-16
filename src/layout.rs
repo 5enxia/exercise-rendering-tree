@@ -40,9 +40,37 @@ pub fn to_layout_box<'a>(snode: StyledNode<'a>) -> LayoutBox<'a> {
         Display::None => unreachable!("Root node has no display type"),
     };
 
+    // 子要素を再帰的に処理
+    let children = snode.children
+        .into_iter()
+        .fold(vec![], |mut acc: Vec<LayoutBox>, child| {
+            match child.display() {
+                // 
+                Display::Block => {
+                    acc.push(to_layout_box(child));
+                    acc
+                },
+                Display::Inline => {
+                    match acc.last() {
+                        Some(&LayoutBox {
+                            box_type: BoxType::AnonymousBox,
+                            ..
+                        }) => {},
+                        _ => acc.push(LayoutBox {
+                            box_type: BoxType::AnonymousBox,
+                            children: vec![],
+                        }),
+                    };
+                    acc.last_mut().unwrap().children.push(to_layout_box(child));
+                    acc
+                },
+                Display::None => unreachable!("Root node has no display type"),
+            }
+        });
+
     LayoutBox {
         box_type: box_type,
-        children: vec![],
+        children: children
     }
 }
 
