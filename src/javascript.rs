@@ -3,8 +3,8 @@
 
 use std::{cell::RefCell, f32::consts::E, rc::Rc, sync::Once};
 
-use rusty_v8 as v8;
-// use v8;
+// use rusty_v8 as v8;
+use v8;
 
 pub struct JavaScriptRuntimeState {
     pub context: v8::Global<v8::Context>
