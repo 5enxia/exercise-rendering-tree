@@ -9,6 +9,7 @@ use v8;
 use crate::{dom::Node, renderer};
 
 pub mod renderapi;
+pub mod binding;
 use renderapi::RendererAPI;
 
 pub struct JavaScriptRuntimeState {
