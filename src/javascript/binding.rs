@@ -97,3 +97,47 @@ fn to_v8_element<'s>(
 
     node
 }
+
+// DOMを構築する
+pub fn create_document_object<'s>(
+    scope:&mut v8::ContextScope<'s, v8::EscapableHandleScope>,
+) -> v8::Local<'s, v8::Object> {
+    let document = v8::ObjectTemplate::new(scope).new_instance(scope).unwrap();
+
+    {
+        // getelementById()の関数定義
+        let key = v8::String::new(scope, "getElementById").unwrap();
+        let function_template = v8::FunctionTemplate::new(
+            scope,
+            |scope: &mut v8::HandleScope, args: v8::FunctionCallbackArguments, mut return_val: v8::ReturnValue| {
+                let id = args.get(0).to_string(scope).unwrap().to_rust_string_lossy(scope);
+
+                let document_element = JavaScriptRuntime::document_element(scope);
+                let document_element = &mut document_element.borrow_mut();
+
+                return_val.set(
+                    document_element
+                        .get_element_by_id(id.as_str())
+                        .and_then(|node| {
+                            if let NodeType::Element(ref mut el) = node.node_type {
+                                let tag_name = el.tag_name.clone();
+                                let attributes = el.attributes();
+                                Some((node, tag_name, attributes))
+                            } else {
+                                None
+                            }
+                        })
+                        .and_then(|(node, tag_name, attributes)| {
+                            Some(to_v8_element(scope, tag_name.as_str(), attributes, node).into())
+                        })
+                        .unwrap_or_else(|| v8::undefined(scope).into()),
+                );
+            },
+        );
+
+        let val = function_template.get_function(scope).unwrap();
+        document.set(scope, key.into(), val.into());
+    }
+
+    document
+}

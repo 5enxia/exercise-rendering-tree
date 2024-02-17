@@ -6,7 +6,7 @@ use std::{cell::RefCell, f32::consts::E, rc::Rc, sync::Once};
 // use rusty_v8 as v8;
 use v8;
 
-use crate::{dom::Node, renderer};
+use crate::{dom::Node, javascript::binding::create_document_object, renderer};
 
 pub mod renderapi;
 pub mod binding;
@@ -50,6 +50,15 @@ impl JavaScriptRuntime {
             let isolate_scope = &mut v8::HandleScope::new(&mut isolate);
             let handle_scope = &mut v8::EscapableHandleScope::new(isolate_scope);
             let context = v8::Context::new(handle_scope);
+            
+            let global = context.global(handle_scope);
+            {
+                let scope = &mut v8::ContextScope::new(handle_scope, context);
+                let key = v8::String::new(scope, "document").unwrap();
+                let document = create_document_object(scope);
+                global.set(scope, key.into(), document.into());
+            }
+
             let context_scope = handle_scope.escape(context);
             v8::Global::new(handle_scope, context_scope)
         };
@@ -151,6 +160,14 @@ impl JavaScriptRuntime {
         let state = Self::state(isolate);
         let state = state.borrow();
         state.renderer_api.clone()
+    }
+}
+
+impl JavaScriptRuntime {
+    pub fn document_element(isolate: &v8::Isolate) -> Rc<RefCell<Box<Node>>> {
+        let state = Self::state(isolate);
+        let state = state.borrow();
+        state.document_element.clone()
     }
 }
 

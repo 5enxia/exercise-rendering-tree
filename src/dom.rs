@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use combine::parser::token::Value;
+
 use crate::html;
 pub type AttrMap = HashMap<String, String>;
 
@@ -122,6 +124,15 @@ impl Element {
 
     pub fn id(&self) -> Option<&String> {
         self.attributes.get("id")
+    }
+
+    pub fn attributes(&self) -> Vec<(String, String)> {
+        self.attributes
+            .iter()
+            .clone()
+            .into_iter()
+            .map(|(key, value)| (key.to_string(), value.to_string()))
+            .collect()
     }
 }
 
