@@ -146,6 +146,14 @@ impl JavaScriptRuntime {
     }
 }
 
+impl JavaScriptRuntime {
+    pub fn renderer_api(isolate: &v8::Isolate) -> Rc<RendererAPI> {
+        let state = Self::state(isolate);
+        let state = state.borrow();
+        state.renderer_api.clone()
+    }
+}
+
 fn to_pretty_string(mut try_catch: v8::TryCatch<v8::HandleScope>) -> String {
     let exception_string = try_catch.exception().unwrap().to_string(&mut try_catch).unwrap().to_rust_string_lossy(&mut try_catch);
     let message = try_catch.message().unwrap();
