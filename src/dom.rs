@@ -1,4 +1,6 @@
 use std::collections::HashMap;
+
+use crate::html;
 pub type AttrMap = HashMap<String, String>;
 
 #[derive(Debug, PartialEq)]
@@ -19,6 +21,39 @@ impl Node {
             })
             .collect::<Vec<String>>()
             .join("")
+    }
+
+    pub fn inner_html(&self) -> String {
+        self.children
+            .iter()
+            .clone()
+            .into_iter()
+            .map(|node| node.to_string())
+            .collect::<Vec<String>>()
+            .join("")
+    }
+
+    pub fn set_inner_html(&mut self, html: &str) {
+        let nodes = html::parse_raw(html.into());
+        self.children = nodes;
+    }
+
+    pub fn get_element_by_id<'a>(self: &'a mut Box<Node>, id: &str) -> Option<&'a mut Box<Node>> {
+        match self.node_type {
+            // HTML要素の場合
+            NodeType::Element(ref el) => {
+                // 指定したidがある場合はその要素を返す
+                let has_element_id = el.id().map(|element_id| element_id.to_string() == id).unwrap_or(false);
+                if has_element_id {
+                    return Some(self);
+                }
+            },
+            // テキストの場合は何もしない
+            _ => (),
+        };
+        self.children
+            .iter_mut()
+            .find_map(|child| child.get_element_by_id(id))
     }
 }
 
@@ -83,6 +118,10 @@ impl Element {
             }),
             children,
         })
+    }
+
+    pub fn id(&self) -> Option<&String> {
+        self.attributes.get("id")
     }
 }
 
