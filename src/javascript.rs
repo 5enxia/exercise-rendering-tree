@@ -206,4 +206,38 @@ mod tests {
             assert_eq!(r.unwrap(), "5");
         }
     }
+
+    #[test]
+    fn test_domapi() {
+        let (cb_sink, cb_recv) = crossbeam_channel::unbounded();
+        let mut runtime = JavaScriptRuntime::new(
+            Rc::new(RefCell::new(html::parse(
+                r#"<div id="hello" data="test-data"></div><p id="test">test</p>"#,
+            ))),
+            Rc::new(RendererAPI::new(Rc::new(cb_sink))),
+        );
+        {
+            // document.getElementById & (element).tagName
+            let r = runtime.execute(
+                "",
+                r#"let tag = document.getElementById("hello"); tag.tagName"#,
+            );
+            assert!(r.is_ok());
+            assert_eq!(r.unwrap(), "div");
+        }
+        {
+            // (element).innerHTML
+            let r = runtime.execute("", r#"tag.innerHTML = `<p id="added">added</p>`"#);
+            assert!(r.is_ok());
+            // check whether rerendering is requested
+            assert!(cb_recv.try_recv().is_ok());
+            assert!(cb_recv.try_recv().is_err());
+            // check the result of changes
+            let r = runtime.execute(
+                "",
+                r#"let added_tag = document.getElementById("added"); added_tag.tagName"#,
+            );
+            assert_eq!(r, Ok("p".into()));
+        }
+    }
 }
