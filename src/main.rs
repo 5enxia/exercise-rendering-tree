@@ -1,5 +1,6 @@
 use std::rc::Rc;
 
+use cursive::theme::{PaletteColor, Theme};
 use exercise_rendering_tree::{
     css,
     dom::{Node, NodeType},
@@ -36,6 +37,15 @@ p, div {
 
 fn main() {
     let mut siv = cursive::default();
+    let mut palette= siv.current_theme().palette.clone();
+    palette.set_color("background", cursive::theme::Color::TerminalDefault);
+
+    let theme = Theme {
+        shadow: false,
+        borders: cursive::theme::BorderStyle::Simple,
+        palette: palette
+    };
+    siv.set_theme(theme);
 
     let node = html::parse(HTML);
 
