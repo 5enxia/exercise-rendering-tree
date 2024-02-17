@@ -2,6 +2,7 @@ use crate::{
     css,
     dom::{Node, NodeType},
     javascript::{JavaScriptRuntime},
+    javascript::renderapi::RendererAPI,
     layout::to_layout_box,
     render::{to_element_container, ElementContainer},
     style::to_styled_node,
@@ -22,7 +23,7 @@ use std::{
 };
 
 pub struct Renderer {
-    view: ElementContainer, // 表示中のView
+    pub view: ElementContainer, // 表示中のView
     document_element: Rc<RefCell<Box<Node>>>, // DOMツリー
     js_runtime_instance: JavaScriptRuntime, // JavaScriptのランタイム
 }
@@ -70,11 +71,11 @@ impl Renderer {
         Renderer {
             document_element,
             view,
-            js_runtime_instance: JavaScriptRuntime::new(),
-            // js_runtime_instance: JavaScriptRuntime::new(
-            //     document_element_ref,
-            //     Rc::new(RendererAPI::new(ui_cb_sink)),
-            // ),
+            // js_runtime_instance: JavaScriptRuntime::new(),
+            js_runtime_instance: JavaScriptRuntime::new(
+                document_element_ref,
+                Rc::new(RendererAPI::new(ui_cb_sink)),
+            ),
         }
     }
 

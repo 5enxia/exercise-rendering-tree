@@ -6,14 +6,15 @@ use std::{cell::RefCell, f32::consts::E, rc::Rc, sync::Once};
 // use rusty_v8 as v8;
 use v8;
 
-use crate::dom::Node;
+use crate::{dom::Node, renderer};
 
-mod renderapi;
+pub mod renderapi;
+use renderapi::RendererAPI;
 
 pub struct JavaScriptRuntimeState {
     pub context: v8::Global<v8::Context>,
-    // pub renderer_api: Rc<RendererAPI>,
-    // pub doccument_element: Rc<RefCell<Box<Node>>>,
+    pub renderer_api: Rc<RendererAPI>,
+    pub document_element: Rc<RefCell<Box<Node>>>,
 }
 
 #[derive(Debug)]
@@ -22,7 +23,7 @@ pub struct JavaScriptRuntime {
 }
 
 impl JavaScriptRuntime {
-    pub fn new() -> JavaScriptRuntime {
+    pub fn new(document_element: Rc<RefCell<Box<Node>>>, renderer_api: Rc<RendererAPI>) -> JavaScriptRuntime {
         static PUPPY_INIT : Once = Once::new();
         PUPPY_INIT.call_once(move || {
             // Initialize V8.
@@ -53,7 +54,9 @@ impl JavaScriptRuntime {
         };
 
         isolate.set_slot(Rc::new(RefCell::new(JavaScriptRuntimeState {
-            context 
+            context,
+            renderer_api,
+            document_element
         })));
 
         JavaScriptRuntime {
@@ -158,11 +161,21 @@ fn to_pretty_string(mut try_catch: v8::TryCatch<v8::HandleScope>) -> String {
 
 #[cfg(test)]
 mod tests {
+    use cursive::reexports::crossbeam_channel;
+
+    use crate::html;
+
     use super::*;
 
     #[test]
     fn test_execute() {
-        let mut runtime = JavaScriptRuntime::new();
+        // let mut runtime = JavaScriptRuntime::new();
+        let (cb_sink, _cb_recv) = crossbeam_channel::unbounded();
+        let mut runtime = JavaScriptRuntime::new(
+            Rc::new(RefCell::new(html::parse(r#""#))),
+            Rc::new(RendererAPI::new(Rc::new(cb_sink))),
+        );
+
         {
             // a simple math
             let r = runtime.execute("", "1 + 1");
