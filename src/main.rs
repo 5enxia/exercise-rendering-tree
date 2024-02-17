@@ -1,10 +1,13 @@
+use std::rc::Rc;
+
 use exercise_rendering_tree::{
-    html,
     css,
+    dom::{Node, NodeType},
+    html,
     layout::to_layout_box,
     render::to_element_container,
-    style::to_styled_node,
-    dom::{Node, NodeType}
+    renderer::Renderer,
+    style::to_styled_node
 };
 
 const HTML: &str = r#"<body>
@@ -35,18 +38,28 @@ fn main() {
     let mut siv = cursive::default();
 
     let node = html::parse(HTML);
-    let stylesheet = css::parse(&format!(
-        "{}\n{}",
-        DEFAULT_STYLESHEET,
-        collect_tag_inners(&node, "style".into()).join("\n")
-    ));
 
-    let container = to_styled_node(&node, &stylesheet)
-        .and_then(|styled_node| Some(to_layout_box(styled_node)))
-        .and_then(|layout_box| Some(to_element_container(layout_box)));
-    if let Some(container) = container {
-        siv.add_fullscreen_layer(container);
-    }
+    // let stylesheet = css::parse(&format!(
+    //     "{}\n{}",
+    //     DEFAULT_STYLESHEET,
+    //     collect_tag_inners(&node, "style".into()).join("\n")
+    // ));
+
+    // let container = to_styled_node(&node, &stylesheet)
+    //     .and_then(|styled_node| Some(to_layout_box(styled_node)))
+    //     .and_then(|layout_box| Some(to_element_container(layout_box)));
+    // if let Some(container) = container {
+    //     siv.add_fullscreen_layer(container);
+    // }
+
+    // Rendererを生成する
+    let mut renderer = Renderer::new(Rc::new(siv.cb_sink().clone()), node);
+
+    // inline JavaScriptを実行する
+    renderer.execute_inline_scripts();
+
+    // Cursiveによる描画を開始する
+    siv.add_fullscreen_layer(renderer.view);
 
     siv.run();
 }
