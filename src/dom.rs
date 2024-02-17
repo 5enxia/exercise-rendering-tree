@@ -22,6 +22,46 @@ impl Node {
     }
 }
 
+// Implement to_string for Node
+impl ToString for Node {
+    fn to_string(&self) -> String {
+        match self.node_type {
+            // html要素の場合は再帰的に処理する
+            NodeType::Element(ref el) => {
+                // attributes to string
+                let attrs = el.attributes
+                    .iter()
+                    .clone()
+                    .into_iter()
+                    .map(|(key, value)| {
+                        format!("{}=\"{}\"", key, value)
+                    })
+                    .collect::<Vec<_>>()
+                    .join(" ");
+
+                let children = self.children
+                    .iter()
+                    .clone()
+                    .into_iter()
+                    .map(|node| node.to_string())
+                    .collect::<Vec<_>>()
+                    .join("");
+
+                // attributesがない時
+                if attrs.is_empty() {
+                    // <tag_name>children</tag_name>
+                    format!("<{}>{}</{}>", el.tag_name, children, el.tag_name)
+                } else {
+                    // <tag_name attributes>children</tag_name>
+                    format!("<{} {}>{}</{}>", el.tag_name, attrs, children, el.tag_name)
+                }
+            },
+            // テキストの場合はそのまま文字列を返す
+            NodeType::Text(ref text) => text.data.clone()
+        }
+    }
+}
+
 #[derive(Debug, PartialEq)]
 pub enum NodeType {
     Element(Element),
