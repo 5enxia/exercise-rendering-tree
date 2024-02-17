@@ -9,12 +9,7 @@ use crate::{
 };
 
 use cursive::{
-    direction::Orientation,
-    event::{AnyCb, Event, EventResult},
-    view::{Selector, View, ViewNotFound},
-    Rect,
-    Vec2,
-    CbSink,
+    direction::{Direction, Orientation}, event::{AnyCb, Event, EventResult}, view::{CannotFocus, Selector, View, ViewNotFound}, CbSink, Rect, Vec2
 };
 
 use std::{
@@ -101,7 +96,49 @@ impl Renderer {
             collect_tag_inners(&document_element, "script".into()).join("\n")
         };
         self.js_runtime_instance
-            .execute("(inline)", &scripts)
+            .execute("(inline)", &scripts.as_str())
             .unwrap();
+    }
+}
+
+impl View for Renderer {
+    fn draw(&self, printer: &cursive::Printer) {
+        self.view.draw(printer)
+    }
+
+    fn layout(&mut self, v: Vec2) {
+        self.view.layout(v)
+    }
+
+    fn needs_relayout(&self) -> bool {
+        self.view.needs_relayout()
+    }
+
+    fn required_size(&mut self, constraint: Vec2) -> Vec2 {
+        self.view.required_size(constraint)
+    }
+
+    fn on_event(&mut self, e: Event) -> EventResult {
+        self.view.on_event(e)
+    }
+
+    fn call_on_any<'a>(&mut self, s: &Selector<'_>, cb: AnyCb<'a>) {
+        self.view.call_on_any(s, cb)
+    }
+
+    fn focus_view(&mut self, s: &Selector<'_>) -> Result<EventResult, ViewNotFound> {
+        self.view.focus_view(s)
+    }
+
+    fn take_focus(&mut self, source: Direction) -> Result<EventResult, CannotFocus>{
+        self.view.take_focus(source)
+    }
+
+    fn important_area(&self, view_size: Vec2) -> Rect {
+        self.view.important_area(view_size)
+    }
+
+    fn type_name(&self) -> &'static str {
+        self.view.type_name()
     }
 }
